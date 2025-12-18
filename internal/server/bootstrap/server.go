@@ -23,7 +23,7 @@ type Server struct {
 // NewServer returns a bootstrap server configured to run on the given host and port.
 //
 // The server will provide data for a gamestate to bootstrap and talk to the configured gamestate servers.
-func NewServer(port, gsHost string, gameServers map[string]string, l zerolog.Logger) (s *Server, err error) {
+func NewServer(port, listen, gsHost string, gameServers map[string]string, l zerolog.Logger) (s *Server, err error) {
 	s = &Server{
 		gsHost: gsHost,
 		r:      http.NewServeMux(),
@@ -31,7 +31,7 @@ func NewServer(port, gsHost string, gameServers map[string]string, l zerolog.Log
 		l:      l,
 	}
 
-	addr := net.JoinHostPort("", port)
+	addr := net.JoinHostPort(listen, port)
 	s.nl, err = net.Listen("tcp4", addr)
 	if err != nil {
 		return nil, fmt.Errorf("net listen: %w", err)

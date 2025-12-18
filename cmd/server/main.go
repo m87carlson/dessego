@@ -2,15 +2,15 @@
 //
 // The boostrap and game API endpoints for Demon's Souls
 //
-//     Schemes: http
-//	   Version: 1.0.0
-//     basePath: /
+//	    Schemes: http
+//		   Version: 1.0.0
+//	    basePath: /
 //
-//     Consumes:
-//     - text/plain
+//	    Consumes:
+//	    - text/plain
 //
-//     Produces:
-//     - text/plain
+//	    Produces:
+//	    - text/plain
 //
 // swagger:meta
 package main
@@ -37,7 +37,6 @@ import (
 
 const (
 	// TODO: Make configurable
-	hostGame      = "127.0.0.1"
 	portBootstrap = "18000"
 	portUS        = "18666"
 	portEU        = "18667"
@@ -53,11 +52,15 @@ var (
 		"JP": portJP,
 	}
 
-	seed bool
+	seed           bool
+	listenAddr     string
+	publicGameHost string
 )
 
 func main() {
 	flag.BoolVar(&seed, "seed", false, "Seed database tables with legacy data")
+	flag.StringVar(&listenAddr, "listen", "0.0.0.0", "Listen address")
+	flag.StringVar(&publicGameHost, "public", "127.0.0.1", "Public Game Host")
 	flag.Parse()
 
 	l := zerolog.New(os.Stdout)
@@ -74,13 +77,14 @@ func main() {
 	// Bootstrap server; used to allow Demon's Souls to configure it's network
 	// client.
 	var bs *bootstrap.Server
-	bs, err = bootstrap.NewServer(portBootstrap, hostGame, gameServers, l)
+	bs, err = bootstrap.NewServer(portBootstrap, listenAddr, publicGameHost, gameServers, l)
 	if err != nil {
 		fatal(l, err)
 	}
 	servers = append(servers, bs)
 
-	l.Info().Msg("bootstrap server listening on " + portBootstrap)
+	l.Info().Msg("bootstrap server listening on " + listenAddr + ":" + portBootstrap)
+	l.Info().Msg("Public Game Host: " + publicGameHost)
 	go func() {
 		if err = bs.Serve(); err != nil {
 			fatal(l, err)
